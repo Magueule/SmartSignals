@@ -6,21 +6,24 @@ const CRYPTOHELPERS = require('./helpers_crypto');
 
 let coinList = 'Not initialized';
 
+// Start Algo
 async function getAllCrypto() {
 	await DISCORD.send_msg('Starting bot..');
-	await init_coin_list();
+	await set_coin_list();
 	lauchScriptLoop();
 
 	return 'Script launched';
 }
 
+// Get actual image of the market and return
 function getCoins() {
 	return coinList;
 }
 
 // -----------------------------------------------------------------
 
-async function init_coin_list() {
+// Set actual image of the market
+async function set_coin_list() {
 	const result = {};
 	for (let i = 0; i < CRYPTO_LIST.length; i++) {
 		const coinData = await QTF.getSingleCoin(CRYPTO_LIST[i]);
@@ -29,6 +32,7 @@ async function init_coin_list() {
 	coinList = result;
 }
 
+// Start looping for rsi status updates
 async function lauchScriptLoop(){
 	while(true) {
 		for (let i = 0; i < CRYPTO_LIST.length; i++) {
@@ -43,6 +47,7 @@ async function lauchScriptLoop(){
 	}
 }
 
+// Check if indicator meets the strategy
 async function applyStrategy(coinData, coins_list_status) {
 	const redCondition = getRedConditions(coinData, coins_list_status);
 	const yellowCondition = getYellowConditions(coinData, coins_list_status);
@@ -79,7 +84,7 @@ function getGreenConditions(coinData, coins_list_status) {
 async function conditionFilled(message) {
 	console.log(message);
 	await DISCORD.send_msg(message);
-	await init_coin_list();
+	await set_coin_list();
 }
 
 module.exports = {
