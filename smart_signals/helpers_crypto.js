@@ -1,8 +1,10 @@
+const { RSI_REF } = require('./smart_signals_constants');
+
 function createCoinObject(promise) {
 	return {
 		'price': promise.price_usd,
-		'rsi_30min': promise.rsi_30min,
-		'status': setFirstStatus(promise.rsi_30min),
+		[RSI_REF]: promise[RSI_REF],
+		'status': setFirstStatus(promise[RSI_REF]),
 		'date': Date()
 	};
 }

@@ -1,4 +1,4 @@
-const { CRYPTO_LIST } = require('./smart_signals_constants');
+const { CRYPTO_LIST, RSI_REF } = require('./smart_signals_constants');
 const DISCORD = require('../discord/bot');
 const QTF = require('../quantify/quantify');
 const HELPERS = require('../helpers/helpers');
@@ -56,38 +56,38 @@ async function applyStrategy(coinData, coins_list_status) {
 
 	let message;
 	if (redCondition) {
-		message = `${coinData.coin_symbol} in buying zone => Price: ${coinData.price_usd}$. RSI_30min: ${coinData.rsi_30min}. Trend: ${coinData.trend_mean}/100. Safety: ${coinData.safety}/100`;
+		message = `${coinData.coin_symbol} in buying zone => Price: ${coinData.price_usd}$. ${RSI_REF}: ${coinData[RSI_REF]}. Trend: ${coinData.trend_mean}/100. Safety: ${coinData.safety}/100`;
 		console.log(coinData);
 		await conditionFilled(message, 'redCondition');
 	} else if (yellowCondition) {
-		message = `${coinData.coin_symbol} in neutral zone => Price: ${coinData.price_usd}$. RSI_30min: ${coinData.rsi_30min}. Trend: ${coinData.trend_mean}/100. Safety: ${coinData.safety}/100`;
+		message = `${coinData.coin_symbol} in neutral zone => Price: ${coinData.price_usd}$. ${RSI_REF}: ${coinData[RSI_REF]}. Trend: ${coinData.trend_mean}/100. Safety: ${coinData.safety}/100`;
 		console.log(coinData);
 		await conditionFilled(message, 'yellowCondition');
 	} else if (greenCondition) {
-		message = `${coinData.coin_symbol} in selling zone => Price: ${coinData.price_usd}$. RSI_30min: ${coinData.rsi_30min}. Trend: ${coinData.trend_mean}/100. Safety: ${coinData.safety}/100`;
+		message = `${coinData.coin_symbol} in selling zone => Price: ${coinData.price_usd}$. ${RSI_REF}: ${coinData[RSI_REF]}. Trend: ${coinData.trend_mean}/100. Safety: ${coinData.safety}/100`;
 		console.log(coinData);
 		await conditionFilled(message, 'greenCondition');
 	}
 }
 
 function getRedConditions(coinData, coins_list_status) {
-	return coinData.rsi_30min <= 30 && coins_list_status !== 'red';
+	return coinData[RSI_REF] <= 30 && coins_list_status !== 'red';
 }
 
 function getYellowConditions(coinData, coins_list_status) {
-	return coinData.rsi_30min > 30 && coinData.rsi_30min < 70 && coins_list_status !== 'yellow';
+	return coinData[RSI_REF] > 30 && coinData[RSI_REF] < 70 && coins_list_status !== 'yellow';
 }
 
 function getGreenConditions(coinData, coins_list_status) {
-	return coinData.rsi_30min >= 70 && coins_list_status !== 'green';
+	return coinData[RSI_REF] >= 70 && coins_list_status !== 'green';
 }
 
 async function conditionFilled(message, condition) {
 	console.log(message);
-	await DISCORD.send_msg(message);
 	if (condition !== 'yellowCondition') {
-		await set_coin_list();
+		await DISCORD.send_msg(message);
 	}
+	await set_coin_list();
 }
 
 module.exports = {
