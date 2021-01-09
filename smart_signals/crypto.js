@@ -1,5 +1,4 @@
 const { CRYPTO_LIST } = require('./constants/static_constants');
-const SLACK = require('../slack/bot');
 const DISCORD = require('../discord/bot');
 const QTF = require('../quantify/quantify');
 const HELPERS = require('../helpers/helpers');
@@ -8,7 +7,6 @@ const CRYPTOHELPERS = require('./helpers_crypto');
 let coinList = 'Not initialized';
 
 async function getAllCrypto() {
-	await SLACK.send_msg('Starting bot..');
 	await DISCORD.send_msg('Starting bot..');
 	await init_coin_list();
 	lauchScriptLoop();
@@ -80,7 +78,6 @@ function getGreenConditions(coinData, coins_list_status) {
 
 async function conditionFilled(message) {
 	console.log(message);
-	await SLACK.send_msg(message);
 	await DISCORD.send_msg(message);
 	await init_coin_list();
 }
