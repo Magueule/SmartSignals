@@ -1,4 +1,4 @@
-const { CRYPTO_LIST } = require('./constants/static_constants');
+const { CRYPTO_LIST } = require('./smart_signals_constants');
 const DISCORD = require('../discord/bot');
 const QTF = require('../quantify/quantify');
 const HELPERS = require('../helpers/helpers');
@@ -20,6 +20,7 @@ function getCoins() {
 	return coinList;
 }
 
+// -----------------------------------------------------------------
 // -----------------------------------------------------------------
 
 // Set actual image of the market
@@ -57,15 +58,15 @@ async function applyStrategy(coinData, coins_list_status) {
 	if (redCondition) {
 		message = `${coinData.coin_symbol} in buying zone => Price: ${coinData.price_usd}$. RSI_30min: ${coinData.rsi_30min}. Trend: ${coinData.trend_mean}/100. Safety: ${coinData.safety}/100`;
 		console.log(coinData);
-		await conditionFilled(message);
+		await conditionFilled(message, 'redCondition');
 	} else if (yellowCondition) {
 		message = `${coinData.coin_symbol} in neutral zone => Price: ${coinData.price_usd}$. RSI_30min: ${coinData.rsi_30min}. Trend: ${coinData.trend_mean}/100. Safety: ${coinData.safety}/100`;
 		console.log(coinData);
-		await conditionFilled(message);
+		await conditionFilled(message, 'yellowCondition');
 	} else if (greenCondition) {
 		message = `${coinData.coin_symbol} in selling zone => Price: ${coinData.price_usd}$. RSI_30min: ${coinData.rsi_30min}. Trend: ${coinData.trend_mean}/100. Safety: ${coinData.safety}/100`;
 		console.log(coinData);
-		await conditionFilled(message);
+		await conditionFilled(message, 'greenCondition');
 	}
 }
 
@@ -81,10 +82,12 @@ function getGreenConditions(coinData, coins_list_status) {
 	return coinData.rsi_30min >= 70 && coins_list_status !== 'green';
 }
 
-async function conditionFilled(message) {
+async function conditionFilled(message, condition) {
 	console.log(message);
 	await DISCORD.send_msg(message);
-	await set_coin_list();
+	if (condition !== 'yellowCondition') {
+		await set_coin_list();
+	}
 }
 
 module.exports = {
