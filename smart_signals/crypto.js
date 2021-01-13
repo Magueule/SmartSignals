@@ -54,19 +54,23 @@ async function applyStrategy(coinData, coins_list_status) {
 	const yellowCondition = getYellowConditions(coinData, coins_list_status);
 	const greenCondition = getGreenConditions(coinData, coins_list_status);
 
-	let message;
+	const data = {
+		coin_symbol: coinData.coin_symbol,
+		price: coinData.price_usd,
+		[RSI_REF]: coinData[RSI_REF],
+		trend: coinData.trend_mean,
+		safety: coinData.safety,
+	};
+
 	if (redCondition) {
-		message = `${coinData.coin_symbol} in buying zone => Price: ${coinData.price_usd}$. ${RSI_REF}: ${coinData[RSI_REF]}. Trend: ${coinData.trend_mean}/100. Safety: ${coinData.safety}/100`;
-		console.log(coinData);
-		await conditionFilled(message, 'redCondition');
+		data.condition = 'redCondition';
+		await conditionFilled(data);
 	} else if (yellowCondition) {
-		message = `${coinData.coin_symbol} in neutral zone => Price: ${coinData.price_usd}$. ${RSI_REF}: ${coinData[RSI_REF]}. Trend: ${coinData.trend_mean}/100. Safety: ${coinData.safety}/100`;
-		console.log(coinData);
-		await conditionFilled(message, 'yellowCondition');
+		data.condition = 'yellowCondition';
+		await conditionFilled(data);
 	} else if (greenCondition) {
-		message = `${coinData.coin_symbol} in selling zone => Price: ${coinData.price_usd}$. ${RSI_REF}: ${coinData[RSI_REF]}. Trend: ${coinData.trend_mean}/100. Safety: ${coinData.safety}/100`;
-		console.log(coinData);
-		await conditionFilled(message, 'greenCondition');
+		data.condition = 'greenCondition';
+		await conditionFilled(data);
 	}
 }
 
@@ -82,12 +86,48 @@ function getGreenConditions(coinData, coins_list_status) {
 	return coinData[RSI_REF] >= 70 && coins_list_status !== 'green';
 }
 
-async function conditionFilled(message, condition) {
-	console.log(message);
-	if (condition !== 'yellowCondition') {
-		await DISCORD.send_msg(message);
+async function conditionFilled(data) {
+	if (data.condition !== 'yellowCondition') {
+		const tuile = set_tuile(data);
+		await DISCORD.send_msg_tuile(tuile);
 	}
 	await set_coin_list();
+}
+
+function set_tuile(data) {
+	const zone = data.condition === 'greenCondition' ? 'selling zone' : 'buying zone';
+	const conditionColor = data.condition === 'greenCondition' ? 2795028 : 16390425;
+	return {
+		"username": "Smart Signals",
+		"avatar_url": "https://imgur.com/a/Cl3zspb",
+		"embeds": [{
+			"title": `${data.coin_symbol} enters a ${zone}.\n\n`,
+			"color": conditionColor,
+			"thumbnail": {
+				"url": "https://assets.coingecko.com/coins/images/12645/large/AAVE.png"
+			},
+			"fields":[
+				{
+					"name": "RSI",
+					"value": Math.floor(data.rsi_5min),
+					"inline": true
+				},
+				{
+					"name": "Trend",
+					"value": data.trend,
+					"inline": true
+				},
+				{
+					"name": "Safety",
+					"value": data.safety,
+					"inline": true
+				}
+			],
+			"footer": {
+				"text": "This is not a financial advice."
+			}
+		}]
+	};
 }
 
 module.exports = {
